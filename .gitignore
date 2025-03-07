@@ -1,3 +1,6 @@
 *.pt
+*.pyc
+
+
 venv/
 __pycache__/

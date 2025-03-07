@@ -14,7 +14,8 @@ def main():
         if not ret:
             print("Failed to grab frame")
             break
-
+        
+        print(frame.shape)
         cropped_frame = preprocess.crop(frame)
         preprocessed_frame = preprocess.balance(frame)
         
