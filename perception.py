@@ -46,7 +46,8 @@ class Camera:
 
             for object in detections:
                 object.plot()
-                
+                print(object)
+
             cv2.imshow("cam", frame)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
