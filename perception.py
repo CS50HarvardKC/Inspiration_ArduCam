@@ -46,15 +46,15 @@ class Camera:
             
             for result in detections:
                 boxes = result.boxes  # Boxes object for bounding box outputs
-                masks = result.masks  # Masks object for segmentation masks outputs
-                keypoints = result.keypoints  # Keypoints object for pose outputs
-                probs = result.probs  # Probs object for classification outputs
-                obb = result.obb  # Oriented boxes object for OBB outputs
+                # masks = result.masks  # Masks object for segmentation masks outputs
+                # keypoints = result.keypoints  # Keypoints object for pose outputs
+                # probs = result.probs  # Probs object for classification outputs
+                # obb = result.obb  # Oriented boxes object for OBB outputs
                 print(boxes)
-                print(masks)
-                print(keypoints)
-                print(probs)
-                print(obb)
+                # print(masks)
+                # print(keypoints)
+                # print(probs)
+                # print(obb)
             # cv2.imshow("cam", frame)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
