@@ -50,7 +50,7 @@ class Camera:
                 # keypoints = result.keypoints  # Keypoints object for pose outputs
                 # probs = result.probs  # Probs object for classification outputs
                 # obb = result.obb  # Oriented boxes object for OBB outputs
-                print(boxes.xyxyn)
+                print(boxes.xyxy.cpu().numpy())
                 # print(masks)
                 # print(keypoints)
                 # print(probs)
