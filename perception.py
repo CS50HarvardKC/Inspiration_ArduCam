@@ -44,6 +44,9 @@ class Camera:
             # predict
             detections = self.model(frame)
 
+            for object in detections:
+                object.plot()
+                
             cv2.imshow("cam", frame)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
