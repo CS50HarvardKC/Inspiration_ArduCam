@@ -39,12 +39,12 @@ class Camera:
                 print("ERROR: Frame Not Found")
 
             # preprocess
-            cropped_frame = crop(frame)
+            # cropped_frame = crop(frame)
 
             # predict
-            detections = self.model(cropped_frame)
+            detections = self.model(frame)
 
-            cv2.imshow("cam", cropped_frame)
+            cv2.imshow("cam", frame)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
