@@ -1,7 +1,7 @@
 import cv2
 from ultralytics import YOLO
 
-def predict(frame ,model):
+def predict(frame ,model): # pass in frame and yolo model
     detections = model(frame)
 
     # DEBUG
