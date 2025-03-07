@@ -9,6 +9,8 @@ def predict(frame ,model): # pass in frame and yolo model
         print(type(object))
         print(object)
 
+    return detections
+
 
 
     
