@@ -17,7 +17,7 @@ class Camera:
 
     def start(self):
         # set camera properties
-        self.cam = cv2.VideoCapture(1)
+        self.cam = cv2.VideoCapture("/dev/video0")
         self.fps = self.cam.get(cv2.CAP_PROP_FPS)
         self.width = self.cam.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -39,16 +39,27 @@ class Camera:
                 print("ERROR: Frame Not Found")
 
             # preprocess
-            cropped_frame = crop(frame)
+            # cropped_frame = crop(frame)
 
             # predict
-            detections = self.model(cropped_frame)
-
-            cv2.imshow("cam", cropped_frame)
+            detections = self.model(frame)
+            
+            for result in detections:
+                boxes = result.boxes  # Boxes object for bounding box outputs
+                # masks = result.masks  # Masks object for segmentation masks outputs
+                # keypoints = result.keypoints  # Keypoints object for pose outputs
+                # probs = result.probs  # Probs object for classification outputs
+                # obb = result.obb  # Oriented boxes object for OBB outputs
+                print(boxes.xyxy.cpu().numpy())
+                # print(masks)
+                # print(keypoints)
+                # print(probs)
+                # print(obb)
+            # cv2.imshow("cam", frame)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
-
+    
 
 
 if __name__ == "__main__":

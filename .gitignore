@@ -1,3 +1,11 @@
 *.pt
+<<<<<<< HEAD
 venv/
 __pycache__
+=======
+*.pyc
+
+
+venv/
+__pycache__/
+>>>>>>> 75b3d5c51cf67d5d992c95a6cba4a21e7d6a0c8a

@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 def crop(frame):
-    w,h = (frame.shape[0], frame.shape[1])
+    h,w = (frame.shape[0], frame.shape[1])
     size = 640
     cropped_frame = frame[(h-640):h,(1920-640)//2:((1920-640)//2 + 640)]
     return cropped_frame
