@@ -8,7 +8,7 @@ def crop(frame):
     cropped_frame = frame[(h-640):h,(1920-640)//2:((1920-640)//2 + 640)]
     return cropped_frame
 
-def balance(frame, reference_Y_mean):
+def balance(frame, reference_Y_mean = None):
     ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
     current_Y_mean = ycrcb[:, :, 0].mean()
     print(reference_Y_mean)
