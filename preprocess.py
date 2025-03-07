@@ -1,5 +1,6 @@
 """preprocessing: crop + color balance(optional)"""
 import cv2
+import numpy as np
 
 def crop(frame):
     w,h = frame.shape
