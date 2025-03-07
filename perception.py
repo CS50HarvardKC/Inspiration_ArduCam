@@ -17,7 +17,7 @@ class Camera:
 
     def start(self):
         # set camera properties
-        self.cam = cv2.VideoCapture(0)
+        self.cam = cv2.VideoCapture("/dev/video0")
         self.fps = self.cam.get(cv2.CAP_PROP_FPS)
         self.width = self.cam.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
