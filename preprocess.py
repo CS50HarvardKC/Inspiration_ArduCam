@@ -11,7 +11,7 @@ def crop(frame):
 def balance(frame, reference_Y_mean = None):
     ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
     current_Y_mean = ycrcb[:, :, 0].mean()
-    print(reference_Y_mean)
+    # print(reference_Y_mean)
 
     if reference_Y_mean is not None and current_Y_mean > 0:
         gamma = reference_Y_mean / current_Y_mean
