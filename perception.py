@@ -45,8 +45,7 @@ class Camera:
             detections = self.model(frame)
 
             for object in detections:
-                object.plot()
-                print(object)
+                object.show()
 
             cv2.imshow("cam", frame)
 
