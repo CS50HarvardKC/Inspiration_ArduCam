@@ -2,7 +2,7 @@ import cv2
 
 def main():
     # Open the Arducam video stream (adjust device index if needed)
-    cap = cv2.VideoCapture("/dev/video1")  # Use /dev/videoX if necessary
+    cap = cv2.VideoCapture("/dev/video0")  # Use /dev/videoX if necessary
     
     if not cap.isOpened():
         print("Error: Could not open camera.")
