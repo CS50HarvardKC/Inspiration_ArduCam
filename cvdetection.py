@@ -32,8 +32,8 @@ def get_red_mask(hsv):
 def get_green_mask(hsv):
     """ Create a binary mask for detecting green objects in HSV """
     # Define green color range
-    lower_green = np.array([35, 100, 100])
-    upper_green = np.array([85, 255, 255])
+    lower_green = np.array([70, 50, 130])   # Adjusted lower bound
+    upper_green = np.array([90, 255, 255]) 
 
     # Create mask for the green range
     mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -118,7 +118,7 @@ def find_lowest_red(mask, normalize=False):
 
 class cvCore:
     def __init__(self,port:str = "/dev/video0"):
-        self.cap = cv2.VideoCapture(port)  #"/home/chaser/Downloads/02_h264.mp4"
+        self.cap = cv2.VideoCapture("/home/chaser/Downloads/02_h264.mp4")  #"/home/chaser/Downloads/02_h264.mp4"
         self.lock = threading.Lock
 
 
@@ -191,12 +191,6 @@ class cvCore:
 
             cv2.imshow("mask", mask)
             time.sleep(1/20)
-
-
-
-
-
-
 
 
 def main():
