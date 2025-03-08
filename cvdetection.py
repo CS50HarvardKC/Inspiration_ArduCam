@@ -29,6 +29,21 @@ def get_red_mask(hsv):
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     return mask
 
+def get_green_mask(hsv):
+    """ Create a binary mask for detecting green objects in HSV """
+    # Define green color range
+    lower_green = np.array([35, 100, 100])
+    upper_green = np.array([85, 255, 255])
+
+    # Create mask for the green range
+    mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Apply morphological operations to remove noise
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    return mask
+
 def detect_objects(frame, mask):
     """ Find contours and draw bounding boxes around detected red objects """
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -118,21 +133,19 @@ class cvCore:
                 break
 
             hsv = preprocess_frame(frame)
-            mask = get_red_mask(hsv)
+            red_mask = get_red_mask(hsv)
+            green_mask = get_green_mask(hsv)
 
-            result = detect_objects(frame, mask)
+            red_result = detect_objects(frame, red_mask)
+            green_result = detect_objects(frame, green_mask)
 
-            low_red = find_lowest_red(mask,normalize=True)
-            left,right = find_extreme(mask)
-            print(left)
-            print(right)
-            if low_red is not None:
-                print(f"x: {low_red[0]} | y: {low_red[1]}")
+            Rleft,Rright = find_extreme(red_mask)
+            Gleft,Gright = find_extreme(green_mask)
 
             # Show output
             cv2.imshow("Original", frame)
-            cv2.imshow("Mask", mask)
-            cv2.imshow("result", result)
+            cv2.imshow("RMask", red_mask)
+            cv2.imshow("GMask", green_mask)
 
             # Press 'q' to exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -141,7 +154,7 @@ class cvCore:
         self.cap.release()
         cv2.destroyAllWindows()
     
-    def control_loop(self,motor,dir):
+    def control_loop(self,motor=None,dir=None,debug=False):
         # dir -> left or right
         if not self.cap.isOpened():
             print("Error: Could not open camera.")
@@ -162,15 +175,19 @@ class cvCore:
             if dir=="left":
                 if(leftmost<640*0.2):
                     print("DEBUG: Turn left")
-                    motor.yaw(1,-0.5)
+                    if not debug:
+                        motor.yaw(1,-0.5)
                 else:
-                    motor.surge(1)
+                    if not debug:
+                        motor.surge(1)
             else:
                 if(rightmost>640*0.8):
                     print("DEBUG: Turn right")
-                    motor.yaw(1,0.5)
+                    if not debug:
+                        motor.yaw(1,0.5)
                 else:
-                    motor.surge(1)
+                    if not debug:
+                        motor.surge(1)
 
             cv2.imshow("mask", mask)
             time.sleep(1/20)
@@ -220,7 +237,7 @@ if __name__ == "__main__":
     import threading
     import time
     cam = cvCore()
-    cam_thread = threading.Thread(target=cam.control_loop,daemon=True)
+    cam_thread = threading.Thread(target=cam.control_loop_test,daemon=True)
     cam_thread.start()
 
     for i in range(120):
