@@ -220,9 +220,9 @@ if __name__ == "__main__":
     import threading
     import time
     cam = cvCore()
-    cam_thread = threading.Thread(target=cam.control_loop_test,daemon=True)
+    cam_thread = threading.Thread(target=cam.control_loopt,daemon=True)
     cam_thread.start()
 
-    for i in range(100):
+    for i in range(120):
         print(f"time: {i}")
         time.sleep(1)
