@@ -42,6 +42,7 @@ def get_green_mask(hsv):
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
+    
     return mask
 
 def detect_objects(frame, mask):
@@ -88,6 +89,31 @@ def find_extreme(mask):
 
     return leftmost_center,rightmost_center
 
+
+def find_largest(mask):
+    """Find the largest contour and its centroid in the given binary mask."""
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return None, None  # No object found
+
+    # Find the largest contour by area
+    largest_contour = max(contours, key=cv2.contourArea)
+    area = cv2.contourArea(largest_contour)
+    if area>500:
+        # Compute the centroid using image moments
+        M = cv2.moments(largest_contour)
+        if M["m00"] != 0:
+            cx = int(M["m10"] / M["m00"])
+            cy = int(M["m01"] / M["m00"])
+            center = (cx, cy)
+        else:
+            center = None  # Avoid division by zero
+        
+        return largest_contour, center
+    else:
+        return None, None
+
 def find_lowest_red(mask, normalize=False):
     """
     Finds the lowest red pixel in the given binary mask and normalizes the coordinates to a 0-1 range.
@@ -116,6 +142,14 @@ def find_lowest_red(mask, normalize=False):
 
     return lowest_pixel  # Return normalized (x, y) or absolute (x, y)
 
+def draw_colored_point_on_mask(mask, center, color=(0, 0, 255)):
+    """Convert mask to BGR and draw a colored point at the given center"""
+    # Draw a circle at the center in the specified color
+    if center:
+        cv2.circle(mask, center, 5, color, -1)  # -1 to fill the circle
+
+    return mask
+
 class cvCore:
     def __init__(self,port:str = "/dev/video0"):
         self.cap = cv2.VideoCapture("/home/chaser/Downloads/02_h264.mp4")  #"/home/chaser/Downloads/02_h264.mp4"
@@ -142,10 +176,22 @@ class cvCore:
             Rleft,Rright = find_extreme(red_mask)
             Gleft,Gright = find_extreme(green_mask)
 
+            _ ,red_buoy = find_largest(red_mask)
+            _ ,green_buoy = find_largest(green_mask)
+
+            # convert to BGR
+            red_mask = cv2.cvtColor(red_mask, cv2.COLOR_GRAY2BGR)
+            green_mask = cv2.cvtColor(green_mask, cv2.COLOR_GRAY2BGR)
+            if red_buoy is not None:
+                red_mask = draw_colored_point_on_mask(red_mask,red_buoy)
+            if green_buoy is not None:
+                green_mask = draw_colored_point_on_mask(green_mask,green_buoy)
+
+            # integrate masks
+            combined = red_mask + green_mask 
             # Show output
             cv2.imshow("Original", frame)
-            cv2.imshow("RMask", red_mask)
-            cv2.imshow("GMask", green_mask)
+            cv2.imshow("combined", combined)
 
             # Press 'q' to exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -166,30 +212,54 @@ class cvCore:
                 break
 
             hsv = preprocess_frame(frame)
-            mask = get_red_mask(hsv)
+            red_mask = get_red_mask(hsv)
+            green_mask = get_green_mask(hsv)
 
-            result = detect_objects(frame, mask)
+            _ ,red_buoy = find_largest(red_mask)
+            _ ,green_buoy = find_largest(green_mask)
 
-            leftmost,rightmost = find_extreme(mask)
+            # normalizing
+            red_buoy = red_buoy/640
+            green_buoy = green_buoy/640
 
-            if dir=="left":
-                if(leftmost<640*0.2):
-                    print("DEBUG: Turn left")
-                    if not debug:
-                        motor.yaw(1,-0.5)
-                else:
-                    if not debug:
-                        motor.surge(1)
+            # see both, use midpoint to navigate
+            if(red_buoy is not None and green_buoy is not None):
+                midpoint = (red_buoy+green_buoy)/2
+                # control motor to yaw(add some p control)
+                delta_normalized = (midpoint-0.5)
+                motor.yaw(1,delta_normalized*2)
+            elif(red_buoy is None):
+                if green_buoy is not None:
+                    # in 4 section
+                    if green_buoy >0.5:
+                        if green_buoy > 0.75:
+                            motor.yaw(1,-0.5)
+                        else:
+                            motor.yaw(1,-0.7)
+                    else:
+                        if green_buoy < 0.25:
+                            motor.yaw(1,-1)
+                        else:
+                            motor.yaw(1,-0.8)
+            elif(green_buoy is None):
+                if red_buoy is not None:
+                    # 4 section -> turn right
+                    if red_buoy > 0.5:
+                        if red_buoy >0.75:
+                            motor.yaw(1,1)
+                        else:
+                            motor.yaw(1,0.8)
+                    else:
+                        if red_buoy > 0.25:
+                            motor.yaw(1,0.4)
+                        else:
+                            motor.yaw(1,0.3)
             else:
-                if(rightmost>640*0.8):
-                    print("DEBUG: Turn right")
-                    if not debug:
-                        motor.yaw(1,0.5)
-                else:
-                    if not debug:
-                        motor.surge(1)
+                motor.surge(0.9)
 
-            cv2.imshow("mask", mask)
+            if debug:
+                combined = red_mask + green_mask
+                cv2.imshow("mask", combined)
             time.sleep(1/20)
 
 
