@@ -298,6 +298,7 @@ def main():
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
+    # TODO merge this repo with competition branch, import motor to pass into contorl_loop
     import threading
     import time
     cam = cvCore()
