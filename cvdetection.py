@@ -1,11 +1,6 @@
 import cv2
 import numpy as np
 
-class cvCore:
-    def __init__(self,port:str = "/dev/video0"):
-        self.cap = cv2.VideoCapture("/home/chaser/Downloads/02_h264.mp4")
-"""WIP"""
-
 def preprocess_frame(frame):
     """ Convert to HSV and apply Gaussian Blur """
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -62,17 +57,19 @@ def find_extreme(mask):
 
     # Loop through contours to find the extreme objects
     for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)  # Get bounding box
+        area = cv2.contourArea(contour)
+        if area > 500:  # Filter small objects
+            x, y, w, h = cv2.boundingRect(contour)  # Get bounding box
 
-        if x < leftmost_x:  # Update leftmost object
-            leftmost_x = x
-            leftmost_contour = contour
-            leftmost_center = x + w//2
+            if x < leftmost_x:  # Update leftmost object
+                leftmost_x = x
+                leftmost_contour = contour
+                leftmost_center = x + w//2
 
-        if x + w > rightmost_x:  # Update rightmost object
-            rightmost_x = x + w
-            rightmost_contour = contour
-            rightmost_center = x + w//2
+            if x + w > rightmost_x:  # Update rightmost object
+                rightmost_x = x + w
+                rightmost_contour = contour
+                rightmost_center = x + w//2
 
     return leftmost_center,rightmost_center
 
@@ -103,6 +100,87 @@ def find_lowest_red(mask, normalize=False):
         lowest_pixel = (normalized_x, normalized_y)
 
     return lowest_pixel  # Return normalized (x, y) or absolute (x, y)
+
+class cvCore:
+    def __init__(self,port:str = "/dev/video0"):
+        self.cap = cv2.VideoCapture(port)  #"/home/chaser/Downloads/02_h264.mp4"
+        self.lock = threading.Lock
+
+
+    def control_loop_test(self):
+        if not self.cap.isOpened():
+            print("Error: Could not open camera.")
+            return
+
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+
+            hsv = preprocess_frame(frame)
+            mask = get_red_mask(hsv)
+
+            result = detect_objects(frame, mask)
+
+            low_red = find_lowest_red(mask,normalize=True)
+            left,right = find_extreme(mask)
+            print(left)
+            print(right)
+            if low_red is not None:
+                print(f"x: {low_red[0]} | y: {low_red[1]}")
+
+            # Show output
+            cv2.imshow("Original", frame)
+            cv2.imshow("Mask", mask)
+            cv2.imshow("result", result)
+
+            # Press 'q' to exit
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        self.cap.release()
+        cv2.destroyAllWindows()
+    
+    def control_loop(self,motor,dir):
+        # dir -> left or right
+        if not self.cap.isOpened():
+            print("Error: Could not open camera.")
+            return
+
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+
+            hsv = preprocess_frame(frame)
+            mask = get_red_mask(hsv)
+
+            result = detect_objects(frame, mask)
+
+            leftmost,rightmost = find_extreme(mask)
+
+            if dir=="left":
+                if(leftmost<640*0.2):
+                    print("DEBUG: Turn left")
+                    motor.yaw(1,-0.5)
+                else:
+                    motor.surge(1)
+            else:
+                if(rightmost>640*0.8):
+                    print("DEBUG: Turn right")
+                    motor.yaw(1,0.5)
+                else:
+                    motor.surge(1)
+
+            cv2.imshow("mask", mask)
+            time.sleep(1/20)
+
+
+
+
+
+
+
 
 def main():
     """ Main function for real-time red object detection """
@@ -139,4 +217,12 @@ def main():
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    main()
+    import threading
+    import time
+    cam = cvCore()
+    cam_thread = threading.Thread(target=cam.control_loop_test,daemon=True)
+    cam_thread.start()
+
+    for i in range(100):
+        print(f"time: {i}")
+        time.sleep(1)
