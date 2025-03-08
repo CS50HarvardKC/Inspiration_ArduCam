@@ -227,15 +227,15 @@ class cvCore:
                 midpoint = (red_buoy+green_buoy)/2
                 # control motor to veer(add some p control)
                 delta_normalized = (midpoint-0.5)
-                motor.veer(1,delta_normalized)
+                motor.veer(0.6, delta_normalized)
             elif(red_buoy is None):
                 if green_buoy is not None:
                     # in 4 section
                     if green_buoy >0.5:
                         if green_buoy > 0.75:
-                            motor.veer(0.6,-0.2)
+                            motor.surge(0.6)
                         else:
-                            motor.veer(0.6,-0.3)
+                            motor.veer(0.6,-0.2)
                     else:
                         if green_buoy < 0.25:
                             motor.veer(0.6,-0.5)
@@ -251,11 +251,11 @@ class cvCore:
                             motor.veer(0.6,0.4)
                     else:
                         if red_buoy > 0.25:
-                            motor.veer(0.6,0.3)
-                        else:
                             motor.veer(0.6,0.2)
+                        else:
+                            motor.surge(0.6,0.0)
             else:
-                motor.surge(0.9)
+                motor.surge(0.8)
 
             if debug:
                 combined = red_mask + green_mask
