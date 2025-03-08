@@ -225,35 +225,35 @@ class cvCore:
             # see both, use midpoint to navigate
             if(red_buoy is not None and green_buoy is not None):
                 midpoint = (red_buoy+green_buoy)/2
-                # control motor to yaw(add some p control)
+                # control motor to veer(add some p control)
                 delta_normalized = (midpoint-0.5)
-                motor.yaw(1,delta_normalized*2)
+                motor.veer(1,delta_normalized)
             elif(red_buoy is None):
                 if green_buoy is not None:
                     # in 4 section
                     if green_buoy >0.5:
                         if green_buoy > 0.75:
-                            motor.yaw(1,-0.5)
+                            motor.veer(0.6,-0.2)
                         else:
-                            motor.yaw(1,-0.7)
+                            motor.veer(0.6,-0.3)
                     else:
                         if green_buoy < 0.25:
-                            motor.yaw(1,-1)
+                            motor.veer(0.6,-0.5)
                         else:
-                            motor.yaw(1,-0.8)
+                            motor.veer(0.6,-0.4)
             elif(green_buoy is None):
                 if red_buoy is not None:
                     # 4 section -> turn right
                     if red_buoy > 0.5:
                         if red_buoy >0.75:
-                            motor.yaw(1,1)
+                            motor.veer(0.6,0.5)
                         else:
-                            motor.yaw(1,0.8)
+                            motor.veer(0.6,0.4)
                     else:
                         if red_buoy > 0.25:
-                            motor.yaw(1,0.4)
+                            motor.veer(0.6,0.3)
                         else:
-                            motor.yaw(1,0.3)
+                            motor.veer(0.6,0.2)
             else:
                 motor.surge(0.9)
 
